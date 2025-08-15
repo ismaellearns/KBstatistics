@@ -6,13 +6,13 @@
     <title>Actie Klok</title>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
             padding: 20px;
         }
 
@@ -24,6 +24,7 @@
             text-align: center;
             width: 90%;
             max-width: 600px;
+            overflow: auto;
         }
 
         .timer-display {
@@ -333,4 +334,205 @@
             const exportStatsButton = document.getElementById('export-stats-button');
             const messageArea = document.getElementById('message-area');
             const datumInput = document.getElementById('datum-input');
-            const helftAanduiding = document.getElementById('helft
+            const helftAanduiding = document.getElementById('helft-aanduiding');
+            const startTweedeHelftButton = document.getElementById('start-tweede-helft-button');
+            const wedstrijdTypeButton = document.getElementById('wedstrijdTypeButton');
+            const actionButtons = document.querySelectorAll('.action-button');
+            const actiesLijst = document.getElementById('acties-lijst');
+            const statistiekenLijst = document.getElementById('statistieken-lijst');
+            const wisselVakkenButton = document.getElementById('wisselVakkenButton');
+            const wisselUitSelect = document.getElementById('wissel-uit-select');
+            const wisselInSelect = document.getElementById('wissel-in-select');
+            const wisselButton = document.getElementById('wissel-button');
+            const thuisploegNaamDisplay = document.getElementById('thuisploeg-naam-display');
+            const thuisploegScoreDisplay = document.getElementById('thuisploeg-score');
+            const uitploegNaamDisplay = document.getElementById('uitploeg-naam-display');
+            const uitploegScoreDisplay = document.getElementById('uitploeg-score');
+            const allPlayerContainers = document.querySelectorAll('.speler-container');
+            const actieveSpelersContainers = document.querySelectorAll('[data-role="active"]');
+            const reserveSpelersContainers = document.querySelectorAll('[data-role="reserve"]');
+            const allSpelerNaamSpans = document.querySelectorAll('.speler-naam-span');
+            
+            let totaleSeconden = 0;
+            let klokInterval;
+            let isKlokActief = false;
+            let startTijdMinuten = 25;
+            let spelerStats = {};
+            let actieLog = [];
+            let huidigeHelft = 1;
+            let thuisploegScore = 0;
+            let uitploegScore = 0;
+            let isThuiswedstrijd = true;
+            let selectedPlayerName = null;
+            let selectedPlayerSpan = null;
+            let spelerSpeeltijd = {};
+            let spelersOpVeld = new Set();
+            let klokStartTijd = 0;
+            
+            function updateKlokWeergave() {
+                const minuten = Math.floor(totaleSeconden / 60);
+                const seconden = totaleSeconden % 60;
+                minutenDisplay.textContent = String(minuten).padStart(2, '0');
+                secondenDisplay.textContent = String(seconden).padStart(2, '0');
+                helftAanduiding.textContent = `Helft: ${huidigeHelft}`;
+            }
+
+            function startKlok() {
+                messageArea.textContent = '';
+                if (isKlokActief) {
+                    return;
+                }
+                isKlokActief = true;
+
+                startTijdMinuten = parseInt(minutenInput.value, 10);
+                if (startTijdMinuten <= 0 || isNaN(startTijdMinuten)) {
+                    messageArea.textContent = 'Voer een geldig aantal minuten in (minimaal 1).';
+                    isKlokActief = false;
+                    return;
+                }
+                totaleSeconden = startTijdMinuten * 60;
+                updateKlokWeergave();
+                
+                klokStartTijd = Date.now();
+                startSpelerTijdmeting();
+
+                startButton.disabled = true;
+                pauzeButton.disabled = false;
+                minutenInput.disabled = true;
+                klokInterval = setInterval(() => {
+                    if (totaleSeconden <= 0) {
+                        clearInterval(klokInterval);
+                        isKlokActief = false;
+                        pauzeButton.disabled = true;
+                        minutenInput.disabled = false;
+                        stopSpelerTijdmeting();
+                        if (huidigeHelft === 1) {
+                            messageArea.textContent = 'Einde eerste helft!';
+                            startButton.classList.add('hidden');
+                            startTweedeHelftButton.classList.remove('hidden');
+                        } else {
+                            messageArea.textContent = 'Einde wedstrijd!';
+                            startButton.classList.remove('hidden');
+                            startButton.textContent = 'Start Opnieuw';
+                        }
+                        return;
+                    }
+                    totaleSeconden--;
+                    updateKlokWeergave();
+                }, 1000);
+            }
+            
+            function startTweedeHelft() {
+                huidigeHelft = 2;
+                totaleSeconden = parseInt(minutenInput.value, 10) * 60;
+                messageArea.textContent = 'Tweede helft gestart!';
+                startTweedeHelftButton.classList.add('hidden');
+                startButton.classList.remove('hidden');
+                startButton.textContent = 'Start 2e Helft';
+                startKlok();
+            }
+
+            function pauzeerKlok() {
+                clearInterval(klokInterval);
+                isKlokActief = false;
+                startButton.disabled = false;
+                pauzeButton.disabled = true;
+                minutenInput.disabled = false;
+                stopSpelerTijdmeting();
+            }
+
+            function resetKlok() {
+                clearInterval(klokInterval);
+                isKlokActief = false;
+                totaleSeconden = 0;
+                huidigeHelft = 1;
+                thuisploegScore = 0;
+                uitploegScore = 0;
+                isThuiswedstrijd = true;
+                wedstrijdTypeButton.textContent = 'Wedstrijdtype: Thuis';
+                updateKlokWeergave();
+                updateScoreWeergave();
+                startButton.disabled = false;
+                pauzeButton.disabled = true;
+                minutenInput.disabled = false;
+                messageArea.textContent = '';
+                actieLog = [];
+                spelerStats = {};
+                spelerSpeeltijd = {};
+                spelersOpVeld.clear();
+                actiesLijst.innerHTML = '';
+                statistiekenLijst.innerHTML = '';
+                startButton.textContent = 'Start 1e Helft';
+                startButton.classList.remove('hidden');
+                startTweedeHelftButton.classList.add('hidden');
+                disableActionButtons();
+                deselectAllPlayers();
+                selectedPlayerName = null;
+                resetPlaceholderText();
+            }
+            
+            function startSpelerTijdmeting() {
+                const activePlayers = document.querySelectorAll('[data-role="active"] .speler-naam-span');
+                activePlayers.forEach(span => {
+                    const naam = span.textContent.trim();
+                    if (naam && naam !== span.dataset.placeholder) {
+                        spelersOpVeld.add(naam);
+                        if (!spelerSpeeltijd[naam]) {
+                            spelerSpeeltijd[naam] = { totaal: 0, start: klokStartTijd };
+                        } else {
+                            spelerSpeeltijd[naam].start = klokStartTijd;
+                        }
+                    }
+                });
+            }
+            
+            function stopSpelerTijdmeting() {
+                const eindTijd = Date.now();
+                spelersOpVeld.forEach(naam => {
+                    if (spelerSpeeltijd[naam] && spelerSpeeltijd[naam].start) {
+                        const verstrekenTijd = eindTijd - spelerSpeeltijd[naam].start;
+                        spelerSpeeltijd[naam].totaal += verstrekenTijd;
+                        spelerSpeeltijd[naam].start = null;
+                    }
+                });
+                updateSpelerStatsDisplay();
+            }
+            
+            function updateSpelerTijdBijWissel(spelerUitNaam, spelerInNaam) {
+                const wisselTijd = Date.now();
+                
+                if (spelerSpeeltijd[spelerUitNaam] && spelerSpeeltijd[spelerUitNaam].start) {
+                    const verstrekenTijd = wisselTijd - spelerSpeeltijd[spelerUitNaam].start;
+                    spelerSpeeltijd[spelerUitNaam].totaal += verstrekenTijd;
+                    spelerSpeeltijd[spelerUitNaam].start = null;
+                }
+                spelersOpVeld.delete(spelerUitNaam);
+                
+                if (!spelerSpeeltijd[spelerInNaam]) {
+                    spelerSpeeltijd[spelerInNaam] = { totaal: 0, start: wisselTijd };
+                } else {
+                    spelerSpeeltijd[spelerInNaam].start = wisselTijd;
+                }
+                spelersOpVeld.add(spelerInNaam);
+            }
+
+            function formatSpeeltijd(milliseconden) {
+                const seconden = Math.floor(milliseconden / 1000);
+                const minuten = Math.floor(seconden / 60);
+                const restSeconden = seconden % 60;
+                return `${minuten} min ${restSeconden} sec`;
+            }
+
+            function updateScoreWeergave() {
+                thuisploegScoreDisplay.textContent = thuisploegScore;
+                uitploegScoreDisplay.textContent = uitploegScore;
+            }
+
+            function updateWisselSelect() {
+                wisselUitSelect.innerHTML = '<option value="">-- Speler UIT --</option>';
+                wisselInSelect.innerHTML = '<option value="">-- Speler IN (Reserve) --</option>';
+                
+                actieveSpelersContainers.forEach(container => {
+                    const spelerNaamSpan = container.querySelector('.speler-naam-span');
+                    const spelerNaam = spelerNaamSpan.textContent.trim();
+                    const spelerNummer = container.querySelector('.
