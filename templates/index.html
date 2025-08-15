@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actie Klok</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .timer-display {
+            font-variant-numeric: tabular-nums;
+        }
+        .message-display {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .score-display {
+            font-variant-numeric: tabular-nums;
+        }
+        .speler-container.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            border-width: 2px;
+        }
+        .input-field {
+            outline: none;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s;
+            background-color: #fff;
+        }
+        .input-field:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+        [contenteditable] {
+            outline: none;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s;
+            background-color: #fff;
+            min-width: 150px;
+        }
+        [contenteditable]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+        [contenteditable][data-placeholder]:empty:not(:focus)::before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            cursor: text;
+            display: block;
+        }
+        .speler-naam-span {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen w-screen p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full h-full max-w-full overflow-auto">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 mb-6">
+            <div class="flex flex-col items-center w-full sm:w-auto">
+                <span id="thuisploeg-naam-display" contenteditable="true" data-placeholder="Thuisploeg" class="font-bold text-lg text-gray-700 p-2 rounded-md"></span>
+                <span id="thuisploeg-score" class="score-display text-5xl font-mono font-bold text-gray-900 bg-gray-200 py-2 px-6 rounded-lg shadow-inner">0</span>
+            </div>
+            <div class="flex flex-col items-center sm:w-1/2 md:w-1/3">
+                <div id="klok-container" class="flex flex-col items-center gap-4 w-full">
+                    <div class="timer-display text-7xl font-mono font-bold text-gray-900 bg-gray-200 py-6 px-4 rounded-lg shadow-inner w-full text-center">
+                        <span id="minuten">00</span>:<span id="seconden">00</span>
+                    </div>
+                    <div id="helft-aanduiding" class="text-xl font-medium text-gray-700 mt-2">Helft: 1</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-center w-full sm:w-auto">
+                <span id="uitploeg-naam-display" contenteditable="true" data-placeholder="Uitploeg" class="font-bold text-lg text-gray-700 p-2 rounded-md"></span>
+                <span id="uitploeg-score" class="score-display text-5xl font-mono font-bold text-gray-900 bg-gray-200 py-2 px-6 rounded-lg shadow-inner">0</span>
+            </div>
+        </div>
+        <div id="message-area" class="message-display mb-6"></div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <input type="date" id="datum-input" class="p-3 rounded-lg border border-gray-300 text-center text-lg w-full sm:w-auto">
+            <button id="wedstrijdTypeButton" class="bg-gray-600 text-white p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors w-full sm:w-auto">Wedstrijdtype: Thuis</button>
+            <label for="minuten-input" class="text-gray-600 font-medium whitespace-nowrap">Start minuten:</label>
+            <input type="number" id="minuten-input" value="25" min="1" class="w-full sm:w-24 p-3 rounded-lg border border-gray-300 text-center text-lg">
+            <button id="start-button" class="bg-green-500 text-white p-3 rounded-lg font-bold hover:bg-green-600 transition-colors w-full sm:w-auto">Start 1e Helft</button>
+            <button id="pauze-button" class="bg-yellow-500 text-white p-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors w-full sm:w-auto" disabled>Pauze</button>
+            <button id="reset-button" class="bg-red-500 text-white p-3 rounded-lg font-bold hover:bg-red-600 transition-colors w-full sm:w-auto">Reset</button>
+            <button id="start-tweede-helft-button" class="bg-green-500 text-white p-3 rounded-lg font-bold hover:bg-green-600 transition-colors w-full sm:w-auto hidden">Start 2e Helft</button>
+        </div>
+        
+        <hr class="my-6 border-t border-gray-300">
+        
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Aanval en Verdediging</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="bg-blue-100 p-4 rounded-xl shadow-inner">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Aanval</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Doelpunt" disabled>Doelpunt</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Assist" disabled>Assist</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Rebound" disabled>Rebound</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Balverlies" disabled>Balverlies</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Penalty" disabled>Penalty</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Goede kans" disabled>Goede kans</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Slechte kans" disabled>Slechte kans</button>
+                </div>
+            </div>
+            
+            <div class="bg-red-100 p-4 rounded-xl shadow-inner">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Verdediging</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Steal" disabled>Steal</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Vrijworp uitgelokt" disabled>Vrijworp uitgelokt</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Doelpunt tegen" disabled>Doelpunt tegen</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Vrijworp tegen" disabled>Vrijworp tegen</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Penalty tegen" disabled>Penalty tegen</button>
+                    <button class="action-button bg-gray-600 text-white text-sm p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors" data-action="Overgenomen" disabled>Overgenomen</button>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-6 border-t border-gray-300">
+        
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold text-gray-800">Spelers & Team</h2>
+            <button id="wisselVakkenButton" class="bg-gray-600 text-white p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors w-full sm:w-auto">Functiewissel</button>
+        </div>
+        
+        <div class="flex flex-col gap-6 mb-6">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Actieve Spelers</h3>
+                <div class="grid grid-cols-2 gap-2 text-center font-bold text-gray-800">
+                    <span>Vak 1</span>
+                    <span>Vak 2</span>
+                </div>
+                <div id="actieve-spelers-inputs" class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="1">
+                        <span contenteditable="true" id="speler-name-1" data-placeholder="Speler 1" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-1" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="2">
+                        <span contenteditable="true" id="speler-name-2" data-placeholder="Speler 2" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-2" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="3">
+                        <span contenteditable="true" id="speler-name-3" data-placeholder="Speler 3" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-3" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="4">
+                        <span contenteditable="true" id="speler-name-4" data-placeholder="Speler 4" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-4" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="5">
+                        <span contenteditable="true" id="speler-name-5" data-placeholder="Speler 5" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-5" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="6">
+                        <span contenteditable="true" id="speler-name-6" data-placeholder="Speler 6" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-6" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="7">
+                        <span contenteditable="true" id="speler-name-7" data-placeholder="Speler 7" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-7" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="active" data-player-id="8">
+                        <span contenteditable="true" id="speler-name-8" data-placeholder="Speler 8" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-8" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Reservespelers</h3>
+                <div id="reserve-spelers-inputs" class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="reserve" data-player-id="9">
+                        <span contenteditable="true" id="speler-name-9" data-placeholder="Reserve 1" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-9" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="reserve" data-player-id="10">
+                        <span contenteditable="true" id="speler-name-10" data-placeholder="Reserve 2" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-10" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="reserve" data-player-id="11">
+                        <span contenteditable="true" id="speler-name-11" data-placeholder="Reserve 3" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-11" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                    <div class="flex items-center gap-2 speler-container cursor-pointer" data-role="reserve" data-player-id="12">
+                        <span contenteditable="true" id="speler-name-12" data-placeholder="Reserve 4" class="w-full p-3 rounded-lg border border-gray-300 speler-naam-span"></span>
+                        <input type="number" id="speler-nummer-12" value="#" class="w-16 p-3 rounded-lg border border-gray-300 text-center input-field">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Spelers Wisselen</h2>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <select id="wissel-uit-select" class="p-3 rounded-lg border border-gray-300 w-full sm:w-1/2">
+                <option value="">-- Speler UIT --</option>
+            </select>
+            <select id="wissel-in-select" class="p-3 rounded-lg border border-gray-300 w-full sm:w-1/2">
+                <option value="">-- Speler IN (Reserve) --</option>
+            </select>
+            <button id="wissel-button" class="bg-purple-500 text-white p-3 rounded-lg font-bold hover:bg-purple-600 transition-colors w-full sm:w-auto" disabled>Wissel Uitvoeren</button>
+        </div>
+        
+        <hr class="my-6 border-t border-gray-300">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xl font-semibold text-gray-700">Actie Log</h3>
+                    <button id="export-log-button" class="bg-indigo-500 text-white p-2 rounded-lg text-sm font-bold hover:bg-indigo-600 transition-colors">Export Actie Log</button>
+                </div>
+                <ul id="acties-lijst" class="list-none p-0 space-y-2">
+                </ul>
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xl font-semibold text-gray-700">Statistieken Overzicht</h3>
+                    <button id="export-stats-button" class="bg-indigo-500 text-white p-2 rounded-lg text-sm font-bold hover:bg-indigo-600 transition-colors">Export Statistieken</button>
+                </div>
+                <ul id="statistieken-lijst" class="list-none p-0 space-y-2">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const minutenDisplay = document.getElementById('minuten');
+            const secondenDisplay = document.getElementById('seconden');
+            const minutenInput = document.getElementById('minuten-input');
+            const startButton = document.getElementById('start-button');
+            const pauzeButton = document.getElementById('pauze-button');
+            const resetButton = document.getElementById('reset-button');
+            const exportLogButton = document.getElementById('export-log-button');
+            const exportStatsButton = document.getElementById('export-stats-button');
+            const messageArea = document.getElementById('message-area');
+            const datumInput = document.getElementById('datum-input');
+            const helftAanduiding = document.getElementById('helft-aanduiding');
+            const startTweedeHelftButton = document.getElementById('start-tweede-helft-button');
+            const wedstrijdTypeButton = document.getElementById('wedstrijdTypeButton');
+            const actionButtons = document.querySelectorAll('.action-button');
+            const actiesLijst = document.getElementById('acties-lijst');
+            const statistiekenLijst = document.getElementById('statistieken-lijst');
+            const wisselVakkenButton = document.getElementById('wisselVakkenButton');
+            const wisselUitSelect = document.getElementById('wissel-uit-select');
+            const wisselInSelect = document.getElementById('wissel-in-select');
+            const wisselButton = document.getElementById('wissel-button');
+            const thuisploegNaamDisplay = document.getElementById('thuisploeg-naam-display');
+            const thuisploegScoreDisplay = document.getElementById('thuisploeg-score');
+            const uitploegNaamDisplay = document.getElementById('uitploeg-naam-display');
+            const uitploegScoreDisplay = document.getElementById('uitploeg-score');
+            const allPlayerContainers = document.querySelectorAll('.speler-container');
+            const actieveSpelersContainers = document.querySelectorAll('[data-role="active"]');
+            const reserveSpelersContainers = document.querySelectorAll('[data-role="reserve"]');
+            const allSpelerNaamSpans = document.querySelectorAll('.speler-naam-span');
+            
+            let totaleSeconden = 0;
+            let klokInterval;
+            let isKlokActief = false;
+            let startTijdMinuten = 25;
+            let spelerStats = {};
+            let actieLog = [];
+            let huidigeHelft = 1;
+            let thuisploegScore = 0;
+            let uitploegScore = 0;
+            let isThuiswedstrijd = true;
+            let selectedPlayerName = null;
+            let selectedPlayerSpan = null;
+            let spelerSpeeltijd = {};
+            let spelersOpVeld = new Set();
+            let klokStartTijd = 0;
+            
+            function updateKlokWeergave() {
+                const minuten = Math.floor(totaleSeconden / 60);
+                const seconden = totaleSeconden % 60;
+                minutenDisplay.textContent = String(minuten).padStart(2, '0');
+                secondenDisplay.textContent = String(seconden).padStart(2, '0');
+                helftAanduiding.textContent = `Helft: ${huidigeHelft}`;
+            }
+
+            function startKlok() {
+                messageArea.textContent = '';
+                if (isKlokActief) {
+                    return;
+                }
+                isKlokActief = true;
+
+                startTijdMinuten = parseInt(minutenInput.value, 10);
+                if (startTijdMinuten <= 0 || isNaN(startTijdMinuten)) {
+                    messageArea.textContent = 'Voer een geldig aantal minuten in (minimaal 1).';
+                    isKlokActief = false;
+                    return;
+                }
+                totaleSeconden = startTijdMinuten * 60;
+                updateKlokWeergave();
+                
+                klokStartTijd = Date.now();
+                startSpelerTijdmeting();
+
+                startButton.disabled = true;
+                pauzeButton.disabled = false;
+                minutenInput.disabled = true;
+                klokInterval = setInterval(() => {
+                    if (totaleSeconden <= 0) {
+                        clearInterval(klokInterval);
+                        isKlokActief = false;
+                        pauzeButton.disabled = true;
+                        minutenInput.disabled = false;
+                        stopSpelerTijdmeting();
+                        if (huidigeHelft === 1) {
+                            messageArea.textContent = 'Einde eerste helft!';
+                            startButton.classList.add('hidden');
+                            startTweedeHelftButton.classList.remove('hidden');
+                        } else {
+                            messageArea.textContent = 'Einde wedstrijd!';
+                            startButton.classList.remove('hidden');
+                            startButton.textContent = 'Start Opnieuw';
+                        }
+                        return;
+                    }
+                    totaleSeconden--;
+                    updateKlokWeergave();
+                }, 1000);
+            }
+            
+            function startTweedeHelft() {
+                huidigeHelft = 2;
+                totaleSeconden = parseInt(minutenInput.value, 10) * 60;
+                messageArea.textContent = 'Tweede helft gestart!';
+                startTweedeHelftButton.classList.add('hidden');
+                startButton.classList.remove('hidden');
+                startButton.textContent = 'Start 2e Helft';
+                startKlok();
+            }
+
+            function pauzeerKlok() {
+                clearInterval(klokInterval);
+                isKlokActief = false;
+                startButton.disabled = false;
+                pauzeButton.disabled = true;
+                minutenInput.disabled = false;
+                stopSpelerTijdmeting();
+            }
+
+            function resetKlok() {
+                clearInterval(klokInterval);
+                isKlokActief = false;
+                totaleSeconden = 0;
+                huidigeHelft = 1;
+                thuisploegScore = 0;
+                uitploegScore = 0;
+                isThuiswedstrijd = true;
+                wedstrijdTypeButton.textContent = 'Wedstrijdtype: Thuis';
+                updateKlokWeergave();
+                updateScoreWeergave();
+                startButton.disabled = false;
+                pauzeButton.disabled = true;
+                minutenInput.disabled = false;
+                messageArea.textContent = '';
+                actieLog = [];
+                spelerStats = {};
+                spelerSpeeltijd = {};
+                spelersOpVeld.clear();
+                actiesLijst.innerHTML = '';
+                statistiekenLijst.innerHTML = '';
+                startButton.textContent = 'Start 1e Helft';
+                startButton.classList.remove('hidden');
+                startTweedeHelftButton.classList.add('hidden');
+                disableActionButtons();
+                deselectAllPlayers();
+                selectedPlayerName = null;
+                resetPlaceholderText();
+            }
+            
+            function startSpelerTijdmeting() {
+                const activePlayers = document.querySelectorAll('[data-role="active"] .speler-naam-span');
+                activePlayers.forEach(span => {
+                    const naam = span.textContent.trim();
+                    if (naam && naam !== span.dataset.placeholder) {
+                        spelersOpVeld.add(naam);
+                        if (!spelerSpeeltijd[naam]) {
+                            spelerSpeeltijd[naam] = { totaal: 0, start: klokStartTijd };
+                        } else {
+                            spelerSpeeltijd[naam].start = klokStartTijd;
+                        }
+                    }
+                });
+            }
+            
+            function stopSpelerTijdmeting() {
+                const eindTijd = Date.now();
+                spelersOpVeld.forEach(naam => {
+                    if (spelerSpeeltijd[naam] && spelerSpeeltijd[naam].start) {
+                        const verstrekenTijd = eindTijd - spelerSpeeltijd[naam].start;
+                        spelerSpeeltijd[naam].totaal += verstrekenTijd;
+                        spelerSpeeltijd[naam].start = null;
+                    }
+                });
+                updateSpelerStatsDisplay();
+            }
+            
+            function updateSpelerTijdBijWissel(spelerUitNaam, spelerInNaam) {
+                const wisselTijd = Date.now();
+                
+                if (spelerSpeeltijd[spelerUitNaam] && spelerSpeeltijd[spelerUitNaam].start) {
+                    const verstrekenTijd = wisselTijd - spelerSpeeltijd[spelerUitNaam].start;
+                    spelerSpeeltijd[spelerUitNaam].totaal += verstrekenTijd;
+                    spelerSpeeltijd[spelerUitNaam].start = null;
+                }
+                spelersOpVeld.delete(spelerUitNaam);
+                
+                if (!spelerSpeeltijd[spelerInNaam]) {
+                    spelerSpeeltijd[spelerInNaam] = { totaal: 0, start: wisselTijd };
+                } else {
+                    spelerSpeeltijd[spelerInNaam].start = wisselTijd;
+                }
+                spelersOpVeld.add(spelerInNaam);
+            }
+
+            function formatSpeeltijd(milliseconden) {
+                const seconden = Math.floor(milliseconden / 1000);
+                const minuten = Math.floor(seconden / 60);
+                const restSeconden = seconden % 60;
+                return `${minuten} min ${restSeconden} sec`;
+            }
+
+            function updateScoreWeergave() {
+                thuisploegScoreDisplay.textContent = thuisploegScore;
+                uitploegScoreDisplay.textContent = uitploegScore;
+            }
+
+            function updateWisselSelect() {
+                wisselUitSelect.innerHTML = '<option value="">-- Speler UIT --</option>';
+                wisselInSelect.innerHTML = '<option value="">-- Speler IN (Reserve) --</option>';
+                
+                actieveSpelersContainers.forEach(container => {
+                    const spelerNaamSpan = container.querySelector('.speler-naam-span');
+                    const spelerNaam = spelerNaamSpan.textContent.trim();
+                    const spelerNummer = container.querySelector('.input-field').value.trim();
+                    if (spelerNaam !== '' && spelerNaam !== spelerNaamSpan.dataset.placeholder) {
+                        const option = document.createElement('option');
+                        option.value = spelerNaam;
+                        option.textContent = `${spelerNaam}${spelerNummer &&
