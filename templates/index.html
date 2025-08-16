@@ -4,28 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actie Klok</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+		.action-button,
+		.speler-container,
+		#wisselButton,
+		#wisselVakkenButton,
+		#wedstrijdTypeButton,
+		#export-log-button,
+		#export-stats-button {
+			cursor: pointer;
+		}
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
         }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            overflow: auto;
+        }
+
         .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
             font-variant-numeric: tabular-nums;
         }
+
+        .controls button,
+        #add-action-button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .controls button:hover,
+        #add-action-button:hover {
+            background-color: #0056b3;
+        }
+
+        .controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
+
+        .actions-section {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #actions-list {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        #actions-list li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            border-left: 5px solid #007bff;
+        }
+
         .message-display {
             color: #ef4444;
             text-align: center;
             margin-top: 1rem;
             font-weight: 500;
         }
+
         .score-display {
             font-variant-numeric: tabular-nums;
         }
+
         .speler-container.selected {
             border-color: #3b82f6;
             background-color: #eff6ff;
             border-width: 2px;
         }
+
         .input-field {
             outline: none;
             border: 1px solid #d1d5db;
@@ -34,10 +130,12 @@
             transition: border-color 0.2s;
             background-color: #fff;
         }
+
         .input-field:focus {
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
         }
+
         [contenteditable] {
             outline: none;
             border: 1px solid #d1d5db;
@@ -47,19 +145,121 @@
             background-color: #fff;
             min-width: 150px;
         }
+
         [contenteditable]:focus {
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
         }
+
         [contenteditable][data-placeholder]:empty:not(:focus)::before {
             content: attr(data-placeholder);
             color: #9ca3af;
             cursor: text;
             display: block;
         }
+
         .speler-naam-span {
             font-weight: 500;
         }
+
+        /* Tailwind-equivalent styles */
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .h-screen { height: 100vh; }
+        .w-screen { width: 100vw; }
+        .p-4 { padding: 1rem; }
+        .bg-white { background-color: #ffffff; }
+        .p-8 { padding: 2rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .max-w-full { max-width: 100%; }
+        .overflow-auto { overflow: auto; }
+        .flex-col { flex-direction: column; }
+        .sm\:flex-row { flex-direction: row; }
+        .sm\:items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .gap-6 { gap: 1.5rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .sm\:w-auto { width: auto; }
+        .font-bold { font-weight: 700; }
+        .text-lg { font-size: 1.125rem; }
+        .text-gray-700 { color: #4b5563; }
+        .p-2 { padding: 0.5rem; }
+        .rounded-md { border-radius: 0.375rem; }
+        .score-display { font-variant-numeric: tabular-nums; }
+        .text-5xl { font-size: 3rem; }
+        .font-mono { font-family: monospace; }
+        .text-gray-900 { color: #111827; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+        .sm\:w-1\/2 { width: 50%; }
+        .md\:w-1\/3 { width: 33.333333%; }
+        .timer-display { font-size: 4.5rem; }
+        .text-7xl { font-size: 5rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .text-center { text-align: center; }
+        .text-xl { font-size: 1.25rem; }
+        .font-medium { font-weight: 500; }
+        .mt-2 { margin-top: 0.5rem; }
+        .message-display { color: #ef4444; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .gap-4 { gap: 1rem; }
+        .p-3 { padding: 0.75rem; }
+        .border { border-width: 1px; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .sm\:w-24 { width: 6rem; }
+        .bg-green-500 { background-color: #22c55e; }
+        .text-white { color: #ffffff; }
+        .hover\:bg-green-600:hover { background-color: #16a34a; }
+        .transition-colors { transition-property: background-color, border-color, color, fill, stroke; }
+        .bg-yellow-500 { background-color: #eab308; }
+        .hover\:bg-yellow-600:hover { background-color: #ca8a04; }
+        .bg-red-500 { background-color: #ef4444; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .hidden { display: none; }
+        .my-6 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+        .border-t { border-top-width: 1px; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-semibold { font-weight: 600; }
+        .text-gray-800 { color: #1f2937; }
+        .mb-4 { margin-bottom: 1rem; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .p-4 { padding: 1rem; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gap-2 { gap: 0.5rem; }
+        .text-sm { font-size: 0.875rem; }
+        .bg-gray-600 { background-color: #4b5563; }
+        .hover\:bg-gray-700:hover { background-color: #374151; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .sm\:w-auto { width: auto; }
+        .flex-col { flex-direction: column; }
+        .sm\:flex-row { flex-direction: row; }
+        .cursor-pointer { cursor: pointer; }
+        .speler-container { border: 1px solid transparent; transition: border-color 0.2s, background-color 0.2s; }
+        .speler-container.selected { border-color: #3b82f6; background-color: #eff6ff; }
+        .w-16 { width: 4rem; }
+        .bg-purple-500 { background-color: #a855f7; }
+        .hover\:bg-purple-600:hover { background-color: #9333ea; }
+        .text-xl { font-size: 1.25rem; }
+        .bg-indigo-500 { background-color: #6366f1; }
+        .hover\:bg-indigo-600:hover { background-color: #4f46e5; }
+        .list-none { list-style-type: none; }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+        
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen w-screen p-4">
@@ -88,7 +288,7 @@
             <input type="date" id="datum-input" class="p-3 rounded-lg border border-gray-300 text-center text-lg w-full sm:w-auto">
             <button id="wedstrijdTypeButton" class="bg-gray-600 text-white p-3 rounded-lg font-bold hover:bg-gray-700 transition-colors w-full sm:w-auto">Wedstrijdtype: Thuis</button>
             <label for="minuten-input" class="text-gray-600 font-medium whitespace-nowrap">Start minuten:</label>
-            <input type="number" id="minuten-input" value="25" min="1" class="w-full sm:w-24 p-3 rounded-lg border border-gray-300 text-center text-lg">
+            <input type="number" id="minuten-input" value="25" min="1" class="w-full sm:w-24 p-3 rounded-lg border border-gray-300 text-center input-field">
             <button id="start-button" class="bg-green-500 text-white p-3 rounded-lg font-bold hover:bg-green-600 transition-colors w-full sm:w-auto">Start 1e Helft</button>
             <button id="pauze-button" class="bg-yellow-500 text-white p-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors w-full sm:w-auto" disabled>Pauze</button>
             <button id="reset-button" class="bg-red-500 text-white p-3 rounded-lg font-bold hover:bg-red-600 transition-colors w-full sm:w-auto">Reset</button>
@@ -230,222 +430,501 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            // Definieer de DOM-elementen
             const minutenDisplay = document.getElementById('minuten');
             const secondenDisplay = document.getElementById('seconden');
-            const minutenInput = document.getElementById('minuten-input');
             const startButton = document.getElementById('start-button');
             const pauzeButton = document.getElementById('pauze-button');
             const resetButton = document.getElementById('reset-button');
-            const exportLogButton = document.getElementById('export-log-button');
-            const exportStatsButton = document.getElementById('export-stats-button');
-            const messageArea = document.getElementById('message-area');
-            const datumInput = document.getElementById('datum-input');
-            const helftAanduiding = document.getElementById('helft-aanduiding');
             const startTweedeHelftButton = document.getElementById('start-tweede-helft-button');
-            const wedstrijdTypeButton = document.getElementById('wedstrijdTypeButton');
+            const helftAanduiding = document.getElementById('helft-aanduiding');
             const actionButtons = document.querySelectorAll('.action-button');
+            const messageArea = document.getElementById('message-area');
+            const thuisploegScoreDisplay = document.getElementById('thuisploeg-score');
+            const uitploegScoreDisplay = document.getElementById('uitploeg-score');
             const actiesLijst = document.getElementById('acties-lijst');
             const statistiekenLijst = document.getElementById('statistieken-lijst');
+            const thuisploegNaamDisplay = document.getElementById('thuisploeg-naam-display');
+            const uitploegNaamDisplay = document.getElementById('uitploeg-naam-display');
+            const minutenInput = document.getElementById('minuten-input');
+            const datumInput = document.getElementById('datum-input');
+            const exportLogButton = document.getElementById('export-log-button');
+            const exportStatsButton = document.getElementById('export-stats-button');
             const wisselVakkenButton = document.getElementById('wisselVakkenButton');
+            const actieveSpelersContainer = document.getElementById('actieve-spelers-inputs');
+            const reserveSpelersContainer = document.getElementById('reserve-spelers-inputs');
             const wisselUitSelect = document.getElementById('wissel-uit-select');
             const wisselInSelect = document.getElementById('wissel-in-select');
             const wisselButton = document.getElementById('wissel-button');
-            const thuisploegNaamDisplay = document.getElementById('thuisploeg-naam-display');
-            const thuisploegScoreDisplay = document.getElementById('thuisploeg-score');
-            const uitploegNaamDisplay = document.getElementById('uitploeg-naam-display');
-            const uitploegScoreDisplay = document.getElementById('uitploeg-score');
-            const allPlayerContainers = document.querySelectorAll('.speler-container');
-            const actieveSpelersContainers = document.querySelectorAll('[data-role="active"]');
-            const reserveSpelersContainers = document.querySelectorAll('[data-role="reserve"]');
-            const allSpelerNaamSpans = document.querySelectorAll('.speler-naam-span');
-            
-            let totaleSeconden = 0;
-            let klokInterval;
-            let isKlokActief = false;
-            let startTijdMinuten = 25;
-            let spelerStats = {};
-            let actieLog = [];
-            let huidigeHelft = 1;
-            let thuisploegScore = 0;
-            let uitploegScore = 0;
-            let isThuiswedstrijd = true;
-            let selectedPlayerName = null;
-            let selectedPlayerSpan = null;
-            let spelerSpeeltijd = {};
-            let spelersOpVeld = new Set();
-            let klokStartTijd = 0;
-            
-            function updateKlokWeergave() {
-                const minuten = Math.floor(totaleSeconden / 60);
-                const seconden = totaleSeconden % 60;
-                minutenDisplay.textContent = String(minuten).padStart(2, '0');
-                secondenDisplay.textContent = String(seconden).padStart(2, '0');
-                helftAanduiding.textContent = `Helft: ${huidigeHelft}`;
-            }
+            const wedstrijdTypeButton = document.getElementById('wedstrijdTypeButton');
 
-            function startKlok() {
-                messageArea.textContent = '';
-                if (isKlokActief) {
-                    return;
-                }
-                isKlokActief = true;
+            // Globale variabelen
+            let countdownInterval;
+            let totalSeconds;
+            let timerRunning = false;
+            let helft = 1;
+            let selectedPlayer = null;
+            let statistics = {};
+            let actionLog = [];
+            let isVakkenGewisseld = false;
+            let isThuisploeg = true;
 
-                startTijdMinuten = parseInt(minutenInput.value, 10);
-                if (startTijdMinuten <= 0 || isNaN(startTijdMinuten)) {
-                    messageArea.textContent = 'Voer een geldig aantal minuten in (minimaal 1).';
-                    isKlokActief = false;
-                    return;
-                }
-                totaleSeconden = startTijdMinuten * 60;
-                updateKlokWeergave();
-                
-                klokStartTijd = Date.now();
-                startSpelerTijdmeting();
+            // Functie om de klok te starten
+            function startTimer() {
+                if (timerRunning) return;
 
-                startButton.disabled = true;
+                timerRunning = true;
+                disableStartButtons();
                 pauzeButton.disabled = false;
-                minutenInput.disabled = true;
-                klokInterval = setInterval(() => {
-                    if (totaleSeconden <= 0) {
-                        clearInterval(klokInterval);
-                        isKlokActief = false;
-                        pauzeButton.disabled = true;
-                        minutenInput.disabled = false;
-                        stopSpelerTijdmeting();
-                        if (huidigeHelft === 1) {
-                            messageArea.textContent = 'Einde eerste helft!';
-                            startButton.classList.add('hidden');
-                            startTweedeHelftButton.classList.remove('hidden');
-                        } else {
-                            messageArea.textContent = 'Einde wedstrijd!';
-                            startButton.classList.remove('hidden');
-                            startButton.textContent = 'Start Opnieuw';
-                        }
-                        return;
+                wisselVakkenButton.disabled = false;
+                enableActionButtons();
+
+                if (totalSeconds === undefined) {
+                    totalSeconds = parseInt(minutenInput.value) * 60;
+                }
+
+                countdownInterval = setInterval(() => {
+                    const minuten = Math.floor(totalSeconds / 60);
+                    const seconden = totalSeconds % 60;
+                    minutenDisplay.textContent = String(minuten).padStart(2, '0');
+                    secondenDisplay.textContent = String(seconden).padStart(2, '0');
+
+                    if (totalSeconds <= 0) {
+                        clearInterval(countdownInterval);
+                        timerRunning = false;
+                        endHelft();
+                    } else {
+                        totalSeconds--;
                     }
-                    totaleSeconden--;
-                    updateKlokWeergave();
                 }, 1000);
             }
-            
-            function startTweedeHelft() {
-                huidigeHelft = 2;
-                totaleSeconden = parseInt(minutenInput.value, 10) * 60;
-                messageArea.textContent = 'Tweede helft gestart!';
-                startTweedeHelftButton.classList.add('hidden');
-                startButton.classList.remove('hidden');
-                startButton.textContent = 'Start 2e Helft';
-                startKlok();
-            }
 
-            function pauzeerKlok() {
-                clearInterval(klokInterval);
-                isKlokActief = false;
-                startButton.disabled = false;
-                pauzeButton.disabled = true;
-                minutenInput.disabled = false;
-                stopSpelerTijdmeting();
-            }
+            // Functie om de klok te pauzeren
+            function pauzeTimer() {
+                if (!timerRunning) return;
 
-            function resetKlok() {
-                clearInterval(klokInterval);
-                isKlokActief = false;
-                totaleSeconden = 0;
-                huidigeHelft = 1;
-                thuisploegScore = 0;
-                uitploegScore = 0;
-                isThuiswedstrijd = true;
-                wedstrijdTypeButton.textContent = 'Wedstrijdtype: Thuis';
-                updateKlokWeergave();
-                updateScoreWeergave();
-                startButton.disabled = false;
-                pauzeButton.disabled = true;
-                minutenInput.disabled = false;
-                messageArea.textContent = '';
-                actieLog = [];
-                spelerStats = {};
-                spelerSpeeltijd = {};
-                spelersOpVeld.clear();
-                actiesLijst.innerHTML = '';
-                statistiekenLijst.innerHTML = '';
-                startButton.textContent = 'Start 1e Helft';
-                startButton.classList.remove('hidden');
-                startTweedeHelftButton.classList.add('hidden');
+                timerRunning = false;
+                clearInterval(countdownInterval);
+                enableStartButtons();
+                pauzeButton.disabled = false;
                 disableActionButtons();
-                deselectAllPlayers();
-                selectedPlayerName = null;
-                resetPlaceholderText();
             }
-            
-            function startSpelerTijdmeting() {
-                const activePlayers = document.querySelectorAll('[data-role="active"] .speler-naam-span');
-                activePlayers.forEach(span => {
-                    const naam = span.textContent.trim();
-                    if (naam && naam !== span.dataset.placeholder) {
-                        spelersOpVeld.add(naam);
-                        if (!spelerSpeeltijd[naam]) {
-                            spelerSpeeltijd[naam] = { totaal: 0, start: klokStartTijd };
-                        } else {
-                            spelerSpeeltijd[naam].start = klokStartTijd;
-                        }
-                    }
-                });
-            }
-            
-            function stopSpelerTijdmeting() {
-                const eindTijd = Date.now();
-                spelersOpVeld.forEach(naam => {
-                    if (spelerSpeeltijd[naam] && spelerSpeeltijd[naam].start) {
-                        const verstrekenTijd = eindTijd - spelerSpeeltijd[naam].start;
-                        spelerSpeeltijd[naam].totaal += verstrekenTijd;
-                        spelerSpeeltijd[naam].start = null;
-                    }
-                });
-                updateSpelerStatsDisplay();
-            }
-            
-            function updateSpelerTijdBijWissel(spelerUitNaam, spelerInNaam) {
-                const wisselTijd = Date.now();
+
+            // Functie om de klok te resetten
+            function resetTimer() {
+                pauzeTimer();
+                totalSeconds = parseInt(minutenInput.value) * 60;
+                minutenDisplay.textContent = String(parseInt(minutenInput.value)).padStart(2, '0');
+                secondenDisplay.textContent = '00';
+                helft = 1;
+                helftAanduiding.textContent = `Helft: ${helft}`;
                 
-                if (spelerSpeeltijd[spelerUitNaam] && spelerSpeeltijd[spelerUitNaam].start) {
-                    const verstrekenTijd = wisselTijd - spelerSpeeltijd[spelerUitNaam].start;
-                    spelerSpeeltijd[spelerUitNaam].totaal += verstrekenTijd;
-                    spelerSpeeltijd[spelerUitNaam].start = null;
-                }
-                spelersOpVeld.delete(spelerUitNaam);
+                thuisploegScoreDisplay.textContent = '0';
+                uitploegScoreDisplay.textContent = '0';
+
+                actionLog = [];
+                statistics = {};
+                updateStatistiekenDisplay();
+                updateActionsDisplay();
                 
-                if (!spelerSpeeltijd[spelerInNaam]) {
-                    spelerSpeeltijd[spelerInNaam] = { totaal: 0, start: wisselTijd };
+                resetPlayerInputs();
+                
+                disableActionButtons();
+                pauzeButton.disabled = true;
+                resetButton.disabled = false;
+                startTweedeHelftButton.classList.add('hidden');
+                startButton.classList.remove('hidden');
+                startButton.disabled = false;
+                wisselVakkenButton.disabled = true;
+                updateWisselSelects();
+            }
+
+            // Functie om einde van de helft te verwerken
+            function endHelft() {
+                messageArea.textContent = `Einde van helft ${helft}!`;
+                helftAanduiding.textContent = `Pauze`;
+                disableActionButtons();
+                pauzeButton.disabled = true;
+                
+                if (helft === 1) {
+                    startTweedeHelftButton.classList.remove('hidden');
+                    startButton.classList.add('hidden');
+                    startButton.disabled = true;
+                    pauzeButton.disabled = true;
+                    wisselVakkenButton.disabled = false;
                 } else {
-                    spelerSpeeltijd[spelerInNaam].start = wisselTijd;
+                    messageArea.textContent = `Einde van de wedstrijd!`;
+                    startButton.disabled = true;
+                    startTweedeHelftButton.classList.add('hidden');
+                    wisselVakkenButton.disabled = true;
                 }
-                spelersOpVeld.add(spelerInNaam);
             }
 
-            function formatSpeeltijd(milliseconden) {
-                const seconden = Math.floor(milliseconden / 1000);
-                const minuten = Math.floor(seconden / 60);
-                const restSeconden = seconden % 60;
-                return `${minuten} min ${restSeconden} sec`;
+            // Functie om de tweede helft te starten
+            function startTweedeHelft() {
+                helft = 2;
+                helftAanduiding.textContent = `Helft: ${helft}`;
+                totalSeconds = parseInt(minutenInput.value) * 60;
+                startTweedeHelftButton.classList.add('hidden');
+                startButton.classList.remove('hidden');
+                startButton.disabled = true;
+                pauzeButton.disabled = false;
+                startTimer();
+            }
+            
+            function enableActionButtons() {
+                actionButtons.forEach(button => button.disabled = false);
             }
 
-            function updateScoreWeergave() {
-                thuisploegScoreDisplay.textContent = thuisploegScore;
-                uitploegScoreDisplay.textContent = uitploegScore;
+            function disableActionButtons() {
+                actionButtons.forEach(button => button.disabled = true);
+            }
+            
+            function enableStartButtons() {
+                startButton.disabled = false;
+            }
+            
+            function disableStartButtons() {
+                startButton.disabled = true;
             }
 
-            function updateWisselSelect() {
+            // Functie om de geselecteerde speler te markeren
+            function selectPlayer(playerElement) {
+                document.querySelectorAll('.speler-container').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                playerElement.classList.add('selected');
+                selectedPlayer = playerElement.dataset.playerId;
+                
+                messageArea.textContent = '';
+            }
+            
+            function resetPlayerInputs() {
+                document.querySelectorAll('.speler-container').forEach((container, index) => {
+                    const nameSpan = container.querySelector('.speler-naam-span');
+                    const nummerInput = container.querySelector('input[type="number"]');
+                    
+                    const originalId = index + 1;
+                    const originalRole = (originalId <= 8) ? 'active' : 'reserve';
+
+                    container.dataset.playerId = originalId;
+                    container.dataset.role = originalRole;
+                    container.classList.remove('selected');
+
+                    nameSpan.id = `speler-name-${originalId}`;
+                    nummerInput.id = `speler-nummer-${originalId}`;
+
+                    if (originalRole === 'active') {
+                        nameSpan.dataset.placeholder = `Speler ${originalId}`;
+                    } else {
+                        nameSpan.dataset.placeholder = `Reserve ${originalId - 8}`;
+                    }
+                    nameSpan.textContent = '';
+                    nummerInput.value = '#';
+                    
+                    if (originalRole === 'active') {
+                        actieveSpelersContainer.appendChild(container);
+                    } else {
+                        reserveSpelersContainer.appendChild(container);
+                    }
+                });
+                selectedPlayer = null;
+                updateWisselSelects();
+                isVakkenGewisseld = false;
+            }
+
+            function updateWisselSelects() {
                 wisselUitSelect.innerHTML = '<option value="">-- Speler UIT --</option>';
                 wisselInSelect.innerHTML = '<option value="">-- Speler IN (Reserve) --</option>';
                 
-                actieveSpelersContainers.forEach(container => {
-                    const spelerNaamSpan = container.querySelector('.speler-naam-span');
-                    const spelerNaam = spelerNaamSpan.textContent.trim();
-                    const spelerNummer = container.querySelector('.input-field').value.trim();
-                    if (spelerNaam !== '' && spelerNaam !== spelerNaamSpan.dataset.placeholder) {
-                        const option = document.createElement('option');
-                        option.value = spelerNaam;
-                        option.textContent = `${spelerNaam}${spelerNummer &&
+                document.querySelectorAll('#actieve-spelers-inputs .speler-container').forEach(playerEl => {
+                    const id = playerEl.dataset.playerId;
+                    const name = playerEl.querySelector('.speler-naam-span').textContent || `Speler ${id}`;
+                    const option = new Option(name, id);
+                    wisselUitSelect.add(option);
+                });
+
+                document.querySelectorAll('#reserve-spelers-inputs .speler-container').forEach(playerEl => {
+                    const id = playerEl.dataset.playerId;
+                    const name = playerEl.querySelector('.speler-naam-span').textContent || `Reserve ${id - 8}`;
+                    const option = new Option(name, id);
+                    wisselInSelect.add(option);
+                });
+            }
+
+            function voerWisselUit() {
+                const spelerUitId = wisselUitSelect.value;
+                const spelerInId = wisselInSelect.value;
+                
+                if (!spelerUitId || !spelerInId) {
+                    messageArea.textContent = 'Selecteer een speler om uit te wisselen en een reserve om in te wisselen.';
+                    return;
+                }
+
+                const spelerUitEl = document.querySelector(`.speler-container[data-player-id="${spelerUitId}"]`);
+                const spelerInEl = document.querySelector(`.speler-container[data-player-id="${spelerInId}"]`);
+
+                if (spelerUitEl && spelerInEl) {
+                    const spelerUitRole = spelerUitEl.dataset.role;
+                    const spelerInRole = spelerInEl.dataset.role;
+
+                    const parentSpelerUit = spelerUitEl.parentNode;
+                    const parentSpelerIn = spelerInEl.parentNode;
+
+                    parentSpelerUit.replaceChild(spelerInEl, spelerUitEl);
+                    parentSpelerIn.appendChild(spelerUitEl);
+                    
+                    spelerUitEl.dataset.role = spelerInRole;
+                    spelerInEl.dataset.role = spelerUitRole;
+                    
+                    messageArea.textContent = 'Wissel succesvol uitgevoerd.';
+                    logAction('Wissel', `${spelerUitEl.querySelector('.speler-naam-span').textContent} voor ${spelerInEl.querySelector('.speler-naam-span').textContent}`);
+                    updateWisselSelects();
+                }
+            }
+
+            function wisselVakken() {
+                const vak1Players = Array.from(actieveSpelersContainer.querySelectorAll('.speler-container:nth-child(odd)'));
+                const vak2Players = Array.from(actieveSpelersContainer.querySelectorAll('.speler-container:nth-child(even)'));
+                const allPlayers = actieveSpelersContainer.querySelectorAll('.speler-container');
+
+                vak2Players.forEach((player, index) => {
+                    const target = allPlayers[2 * index];
+                    actieveSpelersContainer.insertBefore(player, target);
+                });
+                
+                isVakkenGewisseld = !isVakkenGewisseld;
+                messageArea.textContent = `Functievakken gewisseld.`;
+                logAction('Functiewissel', 'Vak 1 en Vak 2 gewisseld');
+            }
+            
+            function logAction(action, details) {
+                const tijd = `${minutenDisplay.textContent}:${secondenDisplay.textContent}`;
+                const logEntry = {
+                    tijd,
+                    actie: action,
+                    details,
+                    helft: helft
+                };
+                actionLog.push(logEntry);
+                updateActionsDisplay();
+            }
+
+            function updateActionsDisplay() {
+                actiesLijst.innerHTML = '';
+                actionLog.slice().reverse().forEach(log => {
+                    const li = document.createElement('li');
+                    li.textContent = `(${log.tijd}, H${log.helft}) ${log.actie}: ${log.details}`;
+                    actiesLijst.appendChild(li);
+                });
+            }
+
+            function updateStatistics(playerId, action) {
+                if (!statistics[playerId]) {
+                    const playerEl = document.querySelector(`.speler-container[data-player-id="${playerId}"]`);
+                    const playerName = playerEl.querySelector('.speler-naam-span').textContent || `Speler ${playerId}`;
+                    statistics[playerId] = { naam: playerName, acties: {} };
+                }
+                statistics[playerId].acties[action] = (statistics[playerId].acties[action] || 0) + 1;
+                updateStatistiekenDisplay();
+            }
+
+            function updateStatistiekenDisplay() {
+                statistiekenLijst.innerHTML = '';
+                for (const playerId in statistics) {
+                    const playerStats = statistics[playerId];
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${playerStats.naam}</strong>:`;
+                    const ul = document.createElement('ul');
+                    for (const action in playerStats.acties) {
+                        const statLi = document.createElement('li');
+                        statLi.textContent = `${action}: ${playerStats.acties[action]}`;
+                        ul.appendChild(statLi);
+                    }
+                    li.appendChild(ul);
+                    statistiekenLijst.appendChild(li);
+                }
+            }
+
+            function updateScore(isHomeTeam, points) {
+                const scoreDisplay = isHomeTeam ? thuisploegScoreDisplay : uitploegScoreDisplay;
+                let currentScore = parseInt(scoreDisplay.textContent);
+                currentScore += points;
+                scoreDisplay.textContent = currentScore;
+            }
+
+            function setTodayDate() {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                datumInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            function exportToCsv(filename, data) {
+                const csvRows = [];
+                for (const row of data) {
+                    csvRows.push(row.join(','));
+                }
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Hulpfunctie om zowel 'click' als 'touchstart' toe te voegen
+            const addMobileListeners = (element, callback) => {
+                element.addEventListener('click', (e) => {
+                    // Voorkom dubbele actie als touchstart al is geactiveerd
+                    if (e.target.dataset.touchHandled) return;
+                    callback(e);
+                });
+                element.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // Voorkom vertraging en zoom
+                    e.target.dataset.touchHandled = 'true';
+                    callback(e);
+                    setTimeout(() => e.target.dataset.touchHandled = '', 500); // Reset na korte tijd
+                });
+            };
+
+            // Event listeners met de nieuwe hulpfunctie
+            addMobileListeners(startButton, () => {
+                startTimer();
+                messageArea.textContent = 'Wedstrijd gestart!';
+                startButton.disabled = true;
+                pauzeButton.disabled = false;
+            });
+            
+            addMobileListeners(pauzeButton, () => {
+                if (timerRunning) {
+                    pauzeTimer();
+                    messageArea.textContent = 'Wedstrijd gepauzeerd.';
+                } else {
+                    startTimer();
+                    messageArea.textContent = 'Wedstrijd hervat!';
+                }
+            });
+            
+            addMobileListeners(resetButton, resetTimer);
+            addMobileListeners(startTweedeHelftButton, startTweedeHelft);
+
+            actionButtons.forEach(button => {
+                addMobileListeners(button, () => {
+                    if (!selectedPlayer) {
+                        messageArea.textContent = 'Selecteer eerst een speler!';
+                        return;
+                    }
+                    const action = button.dataset.action;
+                    const spelerNaam = document.querySelector(`.speler-container[data-player-id="${selectedPlayer}"] .speler-naam-span`).textContent || `Speler ${selectedPlayer}`;
+                    
+                    logAction(action, `${spelerNaam}`);
+                    updateStatistics(selectedPlayer, action);
+                    messageArea.textContent = `${spelerNaam} voerde de actie '${action}' uit.`;
+
+                    if (action === 'Doelpunt') {
+                        updateScore(isThuisploeg, 1);
+                    } else if (action === 'Doelpunt tegen') {
+                        updateScore(!isThuisploeg, 1);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.speler-container').forEach(playerEl => {
+                addMobileListeners(playerEl, () => {
+                    selectPlayer(playerEl);
+                });
+            });
+
+            addMobileListeners(wisselButton, voerWisselUit);
+            addMobileListeners(wisselVakkenButton, wisselVakken);
+
+            addMobileListeners(wedstrijdTypeButton, () => {
+                isThuisploeg = !isThuisploeg;
+                wedstrijdTypeButton.textContent = `Wedstrijdtype: ${isThuisploeg ? 'Thuis' : 'Uit'}`;
+                const tempNaam = thuisploegNaamDisplay.textContent;
+                thuisploegNaamDisplay.textContent = uitploegNaamDisplay.textContent;
+                uitploegNaamDisplay.textContent = tempNaam;
+
+                const tempScore = thuisploegScoreDisplay.textContent;
+                thuisploegScoreDisplay.textContent = uitploegScoreDisplay.textContent;
+                uitploegScoreDisplay.textContent = tempScore;
+
+                thuisploegNaamDisplay.dataset.placeholder = isThuisploeg ? 'Thuisploeg' : 'Eigen ploeg';
+                uitploegNaamDisplay.dataset.placeholder = isThuisploeg ? 'Uitploeg' : 'Tegenstander';
+            });
+
+            addMobileListeners(exportLogButton, () => {
+                const headers = ['Tijd', 'Helft', 'Actie', 'Details'];
+                const data = actionLog.map(log => [log.tijd, log.helft, log.actie, log.details]);
+                const csvData = [headers, ...data];
+                exportToCsv('actie_log.csv', csvData);
+            });
+
+            addMobileListeners(exportStatsButton, () => {
+                const headers = ['Speler Naam', 'Actie', 'Aantal'];
+                const data = [];
+                for (const playerId in statistics) {
+                    const playerStats = statistics[playerId];
+                    for (const action in playerStats.acties) {
+                        data.push([playerStats.naam, action, playerStats.acties[action]]);
+                    }
+                }
+                const csvData = [headers, ...data];
+                exportToCsv('speler_statistieken.csv', csvData);
+            });
+
+            function initApp() {
+                setTodayDate();
+                resetTimer();
+                updateWisselSelects();
+                
+                document.querySelectorAll('[contenteditable]').forEach(el => {
+                    if (!el.textContent.trim()) {
+                        el.textContent = '';
+                    }
+                    el.addEventListener('blur', updateWisselSelects);
+                    el.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            el.blur();
+                        }
+                    });
+                });
+
+                wisselUitSelect.addEventListener('change', () => {
+                    wisselButton.disabled = !(wisselUitSelect.value && wisselInSelect.value);
+                });
+                wisselInSelect.addEventListener('change', () => {
+                    wisselButton.disabled = !(wisselUitSelect.value && wisselInSelect.value);
+                });
+
+                document.querySelectorAll('.speler-container input').forEach(input => {
+                    input.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                });
+                
+                thuisploegNaamDisplay.dataset.placeholder = 'Thuisploeg';
+                uitploegNaamDisplay.dataset.placeholder = 'Uitploeg';
+            }
+            
+            initApp();
+
+        } catch (error) {
+            console.error('Fout bij initialisatie van de applicatie:', error);
+            messageArea.textContent = 'Er is een fout opgetreden bij het laden van de app. Controleer de console voor meer details.';
+        }
+    });
+</script>
+</body>
+</html>
